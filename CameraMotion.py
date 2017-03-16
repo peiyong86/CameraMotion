@@ -29,24 +29,17 @@ def labelIm(im):
     cv2.rectangle(im, (int(w*0.1), int(h*0.1)), (int(w*0.9), int(h*0.9)),
                   (0, 0, 255), 2)
 
+    
 def flowmove(img1, img2):
     gray1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
     gray2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
     flow = cv2.calcOpticalFlowFarneback(gray1, gray2, None, 0.5, 3, 15, 3, 5, 1.2, 0)
-    #print(flow.shape)
-    #print(np.max(flow))
-    #print(np.min(flow))
     inds = np.nonzero(np.abs(flow) < 0.1)
     total = img1.shape[0] * img1.shape[1] * 2
     if len(inds[0])/float(total) > 0.1:
         return True
     else:
         return False
-    # mag, ang = cv2.cartToPolar(flow[...,0], flow[...,1])
-    # hsv = np.zeros_like(img1)
-    # hsv[...,0] = ang*180/np.pi/2
-    # hsv[...,2] = cv2.normalize(mag,None,0,255,cv2.NORM_MINMAX)
-    # bgr = cv2.cvtColor(hsv,cv2.COLOR_HSV2BGR)
 
 
 def matchim(img1, img2, ifshowdis):
