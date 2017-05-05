@@ -67,47 +67,47 @@ def matchim(img1, img2, ifshowdis):
 
 
 def main():
-        args = docopt(__doc__, version='1.0')
-        videoname = args['<videoname>']
-        ifshowdis = args['--showdis']
-        ifdisplay = not args['--nodisplay']
-        print('Processing video {}'.format(videoname))
-        cap = cv2.VideoCapture(videoname)
-        frame_pre = None
-        il = illuminationAdjust()
-        framei = 1
-        st = time.time()
-        while True:
-            flag, frame = cap.read()
-            if flag:
-                # The frame is ready and already captured
-                frame = downsample(frame)
-                if args['--iladjust']:
-                    frame = il.adjust(frame)
-                    # frame = il.randomadjust(frame)
-                if frame_pre is None:
-                    frame_pre = np.copy(frame)
-                mflag, mim = matchim(frame_pre, frame, ifshowdis)
-                if ifdisplay:
-                    if mflag:
-                        labelIm(frame)
-                    cv2.imshow('video', frame)
-                    if args['--drawmatch']:
-                        cv2.imshow('m video', mim)
-                if mflag:
-                    sec = framei/25.
-                    print("{} min {} seconds detected".format(int(sec/60.), sec%60 ) )
-                framei += 1
-            else:
-                break
+    args = docopt(__doc__, version='1.0')
+    videoname = args['<videoname>']
+    ifshowdis = args['--showdis']
+    ifdisplay = not args['--nodisplay']
+    print('Processing video {}'.format(videoname))
+    cap = cv2.VideoCapture(videoname)
+    frame_pre = None
+    il = illuminationAdjust()
+    framei = 1
+    st = time.time()
+    while True:
+        flag, frame = cap.read()
+        if flag:
+            # The frame is ready and already captured
+            frame = downsample(frame)
+            if args['--iladjust']:
+                frame = il.adjust(frame)
+                # frame = il.randomadjust(frame)
+            if frame_pre is None:
+                frame_pre = np.copy(frame)
+            mflag, mim = matchim(frame_pre, frame, ifshowdis)
             if ifdisplay:
-                k = cv2.waitKey(10)
-                if k == 27:
-                    break
-                elif k == ord('r'):
-                    frame_pre = np.copy(frame)
-        et = time.time()
-        print("total {} frames processed in {} seconds".format(framei-1, et-st))
+                if mflag:
+                    labelIm(frame)
+                cv2.imshow('video', frame)
+                if args['--drawmatch']:
+                    cv2.imshow('m video', mim)
+            if mflag:
+                sec = framei/25.
+                print("{} min {} seconds detected".format(int(sec/60.), sec%60 ) )
+            framei += 1
+        else:
+            break
+        if ifdisplay:
+            k = cv2.waitKey(10)
+            if k == 27:
+                break
+            elif k == ord('r'):
+                frame_pre = np.copy(frame)
+    et = time.time()
+    print("total {} frames processed in {} seconds".format(framei-1, et-st))
 
 
 if __name__ == "__main__":
