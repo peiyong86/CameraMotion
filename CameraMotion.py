@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Usage:
-    CameraMotion.py  <videoname> [--iladjust] [--drawmatch] [--showdis]
+    CameraMotion.py  <videoname> [--iladjust] [--drawmatch] [--showdis] [--nodisplay]
     CameraMotion.py  (-h | --help)
     CameraMotion.py  --version
 
@@ -12,12 +12,14 @@ Options:
     --iladjust    Add illumination adjust simulation.
     --drawmatch   drawing match points.
     --showids     print out distance between current frame and base frame.
+    --nodisplay   do not display, only print detection results
 
 Description:
     Press Esc to exit.
     Press r to reset base frame.
 """
 from docopt import docopt
+import time
 import cv2
 import numpy as np
 from Src.illumination import illuminationAdjust
@@ -68,10 +70,13 @@ def main():
         args = docopt(__doc__, version='1.0')
         videoname = args['<videoname>']
         ifshowdis = args['--showdis']
-        print(videoname)
+        ifdisplay = not args['--nodisplay']
+        print('Processing video {}'.format(videoname))
         cap = cv2.VideoCapture(videoname)
         frame_pre = None
         il = illuminationAdjust()
+        framei = 1
+        st = time.time()
         while True:
             flag, frame = cap.read()
             if flag:
@@ -82,19 +87,27 @@ def main():
                     # frame = il.randomadjust(frame)
                 if frame_pre is None:
                     frame_pre = np.copy(frame)
-                flag, mim = matchim(frame_pre, frame, ifshowdis)
-                if flag:
-                    labelIm(frame)
-                cv2.imshow('video', frame)
-                if args['--drawmatch']:
-                    cv2.imshow('m video', mim)
+                mflag, mim = matchim(frame_pre, frame, ifshowdis)
+                if ifdisplay:
+                    if mflag:
+                        labelIm(frame)
+                    cv2.imshow('video', frame)
+                    if args['--drawmatch']:
+                        cv2.imshow('m video', mim)
+                if mflag:
+                    sec = framei/25.
+                    print("{} min {} seconds detected".format(int(sec/60.), sec%60 ) )
+                framei += 1
             else:
                 break
-            k = cv2.waitKey(10)
-            if k == 27:
-                break
-            elif k == ord('r'):
-                frame_pre = np.copy(frame)
+            if ifdisplay:
+                k = cv2.waitKey(10)
+                if k == 27:
+                    break
+                elif k == ord('r'):
+                    frame_pre = np.copy(frame)
+        et = time.time()
+        print("total {} frames processed in {} seconds".format(framei-1, et-st))
 
 
 if __name__ == "__main__":
